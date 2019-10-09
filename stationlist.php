@@ -1,5 +1,6 @@
 <?php
 
+require('config.php');
 require('helpers/NSApiHelper.php');
 
 $ns = new NSApiHelper();

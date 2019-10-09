@@ -7,7 +7,7 @@ class SlackHelper extends CacheHelper
 
     public function postMessage($messageText) {
         if(DEBUG) {
-            echo 'DEBUG OUTPUT: '.$messageText.'<br/>';
+            echo 'DEBUG OUTPUT: '.$messageText.'<br/>' . "\n\n";
         } else {
             $message = array('payload' => json_encode(array('text' => $messageText)));
             $c = curl_init(SLACK_WEBHOOK);

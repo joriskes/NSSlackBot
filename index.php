@@ -49,6 +49,8 @@ if(count($trajecten)) {
         }
 
         if(count($departures)) {
+            $mergedKeys = []; // holds keys that are merged, since the delay is so long that it's actually the next train on the schedule (e.g. 25-35 minute delay on a 30 minute schedule)
+
             foreach ($departures as $departure) {
                 // For each remaining departure: build up a slack message reporting about it (if delayed)
                 $slackMsg = '';
@@ -64,6 +66,27 @@ if(count($trajecten)) {
                 } else {
                     if ($plannedTime != $actualTime) {
                         $delayMinutes = round(($actualTime - $plannedTime) / 60);
+
+                        $tsBucketBefore = ($actualTime - ($actualTime % (60 * 5)));
+                        $tsBucketAfter = ($actualTime + ($actualTime % (60 * 5)));
+                        // var_dump($tsBucket, date('Y-m-d H:i:s', $tsBucket));
+                        $mergeKeys = [];
+                        $mergeKeys[] = $routeMsg . $tsBucketBefore;
+                        $mergeKeys[] = $routeMsg . $tsBucketAfter;
+                        foreach ($mergeKeys as $mergeKey) {
+                            if (isset($mergedKeys[$mergeKey])) {
+                                // skip merged
+                                if (DEBUG) {
+                                    $slackMsg = $routeMsg . ' ' . $timeMsg . ' skipped, duplicate of ' . $mergedKeys[$mergeKey];
+                                    $slack->postMessage($slackMsg);
+                                }
+                                continue 2;
+                            }
+                        }
+                        $mergedKeys[$mergeKey] = $routeMsg . ' ' . $timeMsg . ' delay ' . round(($actualTime - $plannedTime) / 60);
+                        // var_dump($routeMsg, $actualTime, $mergeKey);  // @todo cleanup
+                        // echo "\n\n"; // @todo cleanup
+
                         if ($delayMinutes > 5) {
                             if ($delayMinutes > 15) {
                                 $slackMsg = $routeMsg . ' ' . $timeMsg . ' *+' . round(($actualTime - $plannedTime) / 60) . ' minuten*';

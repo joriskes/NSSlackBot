@@ -4,7 +4,6 @@ require('CacheHelper.php');
 
 class NSApiHelper extends CacheHelper
 {
-    // https://apiportal.ns.nl/docs/services/public-reisinformatie-api/operations/ApiV2StationsGet
     private $api_url = 'https://gateway.apiportal.ns.nl/public-reisinformatie/api/v2/';
     private $api_key = NS_API_KEY;
     private $stationList = [];

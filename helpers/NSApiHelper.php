@@ -34,7 +34,7 @@ class NSApiHelper extends CacheHelper
                 "method" => "GET",
                 "header" =>
                     "Ocp-Apim-Subscription-Key: $this->api_key\r\n",
-                "user_agent" => "Train delay notifications bot"
+                "user_agent" => "NSSlackBot"
             ],
         ];
 

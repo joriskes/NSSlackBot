@@ -11,7 +11,8 @@ class NSApiHelper extends CacheHelper
 
     public function __construct()
     {
-        $this->setCachePath(dirname(__FILE__) . '/cache');
+        parent::__construct();
+        $this->setCachePath(dirname(__FILE__) . '/../cache');
         if (substr($this->api_url, -1) != '/') $this->api_url .= '/';
     }
 

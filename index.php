@@ -15,6 +15,8 @@ $time = date('G');
 if($time > 5 && $time < 13) $trajecten = TRAJECTEN_OCHTEND;
 if($time > 12 && $time < 24) $trajecten = TRAJECTEN_MIDDAG;
 
+$reportedTrains = [];
+
 if(count($trajecten)) {
     foreach($trajecten as $traject) {
         $depUIC = $traject[0];
@@ -58,7 +60,16 @@ if(count($trajecten)) {
                     }
                 }
             }
-            if(!empty($slackMsg)) $slack->postMessage($slackMsg);
+            if(!empty($slackMsg)) {
+                if(!in_array($departure->name, $reportedTrains)) {
+                    $reportedTrains[] = $departure->name;
+                    $slack->postMessage($slackMsg);
+                } else {
+                    if (DEBUG) {
+                        $slack->postMessage($slackMsg.', already reported');
+                    }
+                }
+            }
         }
     }
 }

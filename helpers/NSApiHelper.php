@@ -59,7 +59,7 @@ class NSApiHelper extends CacheHelper
     }
 
     public function getDepartures($uicCode) {
-        $res = $this->get('departures?uicCode='.$uicCode, '9 minutes');
+        $res = $this->get('departures?uicCode='.$uicCode, '5 minutes');
         if($res && $res->payload && $res->payload->departures) return $res->payload->departures;
         return $res;
     }

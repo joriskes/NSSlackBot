@@ -65,9 +65,11 @@ if(count($trajecten)) {
                     if ($plannedTime != $actualTime) {
                         $delayMinutes = round(($actualTime - $plannedTime) / 60);
                         if ($delayMinutes > 5) {
-                            $slackMsg = $routeMsg . ' ' . $timeMsg . ' *+' . round(($actualTime - $plannedTime) / 60) . ' minuten*';
-                        } else {
-                            $slackMsg = $routeMsg . ' ' . $timeMsg . ' +' . round(($actualTime - $plannedTime) / 60) . ' minuten';
+                            if ($delayMinutes > 15) {
+                                $slackMsg = $routeMsg . ' ' . $timeMsg . ' *+' . round(($actualTime - $plannedTime) / 60) . ' minuten*';
+                            } else {
+                                $slackMsg = $routeMsg . ' ' . $timeMsg . ' +' . round(($actualTime - $plannedTime) / 60) . ' minuten';
+                            }
                         }
                     } else {
                         if (DEBUG) {

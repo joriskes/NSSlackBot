@@ -11,4 +11,6 @@ You'll need a Slack webhook url and an NS apiportal account with the Public-Trav
 - Run this script in a cron of 10 minutes
 
 ## Future ideas
+- Try to post all notifications in one message
 - Consolidate departure times (e.g .39+28 = the 18.09 train, probably just group everything that departs within say 10 mins with same from/to)
+- Read and parse disruptions endpoint (see NSApiHelper->getDisruptions)

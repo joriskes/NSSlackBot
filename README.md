@@ -9,3 +9,6 @@ You'll need a Slack webhook url and an NS apiportal account with the Public-Trav
 - Use the stationlist.php to find your stations UICCode
 - Update config_example.php and rename it to config.php 
 - Run this script in a cron of 10 minutes
+
+## Future ideas
+- Consolidate departure times (e.g .39+28 = the 18.09 train, probably just group everything that departs within say 10 mins with same from/to)

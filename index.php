@@ -48,14 +48,19 @@ if(count($trajecten)) {
             $plannedTime = strtotime($departure->plannedDateTime);
             $actualTime = strtotime($departure->actualDateTime);
 
-            $routeMsg = '_'.$ns->UICCodeToStationName($depUIC).' - '.$ns->UICCodeToStationName($destUIC).'_';
-            $timeMsg = date('H:i',$plannedTime).'u';
+            $routeMsg = $ns->UICCodeToStationName($depUIC).' - '.$ns->UICCodeToStationName($destUIC);
+            $timeMsg = '_'.date('H:i',$plannedTime).'u_';
 
             if($cancelled) {
                 $slackMsg = $routeMsg.' '.$timeMsg.' *TREIN VERVALT*';
             } else {
                 if($plannedTime != $actualTime) {
-                    $slackMsg = $routeMsg.' '.$timeMsg.' *'.round(($actualTime - $plannedTime)/60).' minuten* vertraging';
+                    $delayMinutes = round(($actualTime - $plannedTime)/60);
+                    if($delayMinutes > 5) {
+                        $slackMsg = $routeMsg.' '.$timeMsg.' *'.round(($actualTime - $plannedTime)/60).' minuten* vertraging';
+                    } else {
+                        $slackMsg = $routeMsg.' '.$timeMsg.' '.round(($actualTime - $plannedTime)/60).' minuten vertraging';
+                    }
                 } else {
                     if(DEBUG) {
                         // In debug mode we also report on times

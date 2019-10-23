@@ -16,6 +16,12 @@ define("UIC_BOXTEL", 8400129);
 define("UIC_TILBURG", 8400597);
 define("UIC_WEERT", 8400684);
 
+// Slack OAuth Access Token
+// Add the following oauth scopes to the slack application: chat:write:bot & channels:read
+define('SLACK_CHAT_TOKEN','');
+// Channel id where the bot lives, use channellist.php to find the id
+define('SLACK_CHANNEL_ID','');
+
 define('TRAJECTEN_OCHTEND', [
     [UIC_EINDHOVEN, UIC_BREDA],
     [UIC_WEERT, UIC_EINDHOVEN],

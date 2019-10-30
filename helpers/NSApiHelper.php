@@ -29,21 +29,24 @@ class NSApiHelper extends CacheHelper
         }
         $uri = $this->createUrl($url);
 
-        $reqPrefs = ["http" => [
-                "method" => "GET",
-                "header" =>
-                    "Ocp-Apim-Subscription-Key: $this->api_key\r\n",
-                "user_agent" => "NSSlackBot"
-            ],
-        ];
+        $c = curl_init($uri);
+        curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false); // This is bad
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+        $headers = [];
+        $headers[] = 'Content-Type: application/json; charset=utf-8';
+        $headers[] = 'Ocp-Apim-Subscription-Key: '.$this->api_key;
+        $headers[] = 'user_agent: NSSlackBot';
+        curl_setopt($c, CURLOPT_HTTPHEADER, $headers);
+        $result = curl_exec($c);
+        curl_close($c);
 
-        $stream_context = stream_context_create($reqPrefs);
-        $response = file_get_contents($uri, false, $stream_context);
-        $resObject = @json_decode($response);
-        if (!empty($resObject)) {
-            $this->toCache($url, $resObject);
+        if($result) {
+            $resultJson = @json_decode($result);
+            if($resultJson) {
+                return $resultJson;
+            }
         }
-        return $resObject;
+        return $result;
     }
 
     public function getStations()

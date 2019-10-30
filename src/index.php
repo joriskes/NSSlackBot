@@ -84,8 +84,8 @@ function run()
 }
 
 // In LOOP_MODE keep running with delay
-while (LOOP_MODE) {
-    echo "Running".PHP_EOL;
+do {
+    if(LOOP_MODE) echo 'Running'.PHP_EOL;
     run();
-    sleep(300);
-}
+    if(LOOP_MODE) sleep(300);
+} while (LOOP_MODE);

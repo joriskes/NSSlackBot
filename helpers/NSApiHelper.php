@@ -1,7 +1,5 @@
 <?php
 
-require('CacheHelper.php');
-
 class NSApiHelper extends CacheHelper
 {
     private $api_url = 'https://gateway.apiportal.ns.nl/public-reisinformatie/api/v2/';

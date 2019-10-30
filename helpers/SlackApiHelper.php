@@ -1,7 +1,5 @@
 <?php
 
-require('CacheHelper.php');
-
 class SlackApiHelper extends CacheHelper
 {
     private $channelId;
@@ -71,5 +69,49 @@ class SlackApiHelper extends CacheHelper
         ];
         $res = $this->send('chat.update',$messageObject);
         return $res;
+    }
+
+    public function reportTrainMessage($trainMessage) {
+        $routeMsg = $trainMessage->from . ' - ' . $trainMessage->to;
+        $timeMsg = '_' . date('H:i', $trainMessage->plannedTimestamp) . 'u_';
+
+        $slackMsg = '';
+        if($trainMessage->cancelled) {
+            $slackMsg = $routeMsg . ' ' . $timeMsg . ' *TREIN VERVALT*';
+        } else {
+            // Don't report trains with a delay smaller than 5 minutes, only when already reporting or in debug mode
+            if (($trainMessage->delayedMinutes > 4) || (!empty($trainMessage->slackTS)) || DEBUG) {
+                if ($trainMessage->delayedMinutes > 15) {
+                    $slackMsg = $routeMsg . ' ' . $timeMsg . ' *+' .$trainMessage->delayedMinutes . ' minuten*';
+                } else {
+                    if($trainMessage->delayedMinutes < 1) {
+                        $slackMsg = $routeMsg . ' ' . $timeMsg . ' op tijd';
+                    } else {
+                        $slackMsg = $routeMsg . ' ' . $timeMsg . ' +' . $trainMessage->delayedMinutes . ' minuten';
+                    }
+                }
+            }
+        }
+
+        $postResult = null;
+        if(!empty($slackMsg)) {
+            if(empty($trainMessage->slackTS)) {
+                if(DEBUG) {
+                    echo 'DEBUG, skip NEW Slack message: '.$slackMsg."\n";
+                } else {
+                    $postResult = $this->postMessage($slackMsg);
+                }
+            } else {
+                $slackMsg = $slackMsg.' (update: '.date('H:i').')';
+                if(DEBUG) {
+                    echo 'DEBUG, skip UPDATE Slack message '.$trainMessage->slackTS.': '.$slackMsg."\n";
+                } else {
+                    $postResult = $this->updateMessage($trainMessage->slackTS, $slackMsg);
+                }
+            }
+        }
+
+        if(($postResult) && (isset($postResult->ts))) return $postResult->ts;
+        return 0;
     }
 }

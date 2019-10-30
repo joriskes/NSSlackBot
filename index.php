@@ -1,22 +1,24 @@
 <?php
 require('config.php');
+require('helpers/CacheHelper.php');
 require('helpers/NSApiHelper.php');
-require('helpers/SlackHelper.php');
+require('helpers/SlackApiHelper.php');
+require('helpers/TrainSlackTSCache.php');
 
 // No reporting for weekends
 $day = date('N');
 if($day > 5) exit();
 
 $ns = new NSApiHelper();
-$slack = new SlackHelper();
+$slack = new SlackApiHelper();
+$cache = new TrainSlackTSCache();
 
 $trajecten = [];
+$handled_trains = [];
 $time = date('G');
 // Select the right trajectories by time
 if($time > 5 && $time < 13) $trajecten = TRAJECTEN_OCHTEND;
 if($time > 12 && $time < 22) $trajecten = TRAJECTEN_MIDDAG;
-
-$reportedTrains = [];
 
 if(count($trajecten)) {
     foreach($trajecten as $traject) {
@@ -50,47 +52,34 @@ if(count($trajecten)) {
 
         if(count($departures)) {
             foreach ($departures as $departure) {
-                // For each remaining departure: build up a slack message reporting about it (if delayed)
-                $slackMsg = '';
-                $cancelled = $departure->cancelled;
-                $plannedTime = strtotime($departure->plannedDateTime);
-                $actualTime = strtotime($departure->actualDateTime);
+                $trainId = $departure->name;
+                // Don't double report about the same train twice (eg. Eindhoven - Breda is sometimes also Tilburg - Breda)
+                if(!in_array($trainId, $handled_trains)) {
+                    $handled_trains[] = $trainId;
+                    $trainMessage = $cache->findTrain($trainId);
 
-                $routeMsg = $ns->UICCodeToStationName($depUIC) . ' - ' . $ns->UICCodeToStationName($destUIC);
-                $timeMsg = '_' . date('H:i', $plannedTime) . 'u_';
+                    // For each remaining departure: build up a slack message reporting about it (if delayed)
+                    $plannedTime = strtotime($departure->plannedDateTime);
+                    $actualTime = strtotime($departure->actualDateTime);
 
-                if ($cancelled) {
-                    $slackMsg = $routeMsg . ' ' . $timeMsg . ' *TREIN VERVALT*';
-                } else {
-                    if ($plannedTime != $actualTime) {
+                    $trainMessage->from = $ns->UICCodeToStationName($depUIC);
+                    $trainMessage->to = $ns->UICCodeToStationName($destUIC);
+                    $trainMessage->plannedTimestamp = $plannedTime;
+                    $trainMessage->cancelled = $departure->cancelled;
+
+                    if (!$trainMessage->cancelled) {
                         $delayMinutes = round(($actualTime - $plannedTime) / 60);
-                        if ($delayMinutes > 5) {
-                            if ($delayMinutes > 15) {
-                                $slackMsg = $routeMsg . ' ' . $timeMsg . ' *+' . round(($actualTime - $plannedTime) / 60) . ' minuten*';
-                            } else {
-                                $slackMsg = $routeMsg . ' ' . $timeMsg . ' +' . round(($actualTime - $plannedTime) / 60) . ' minuten';
-                            }
-                        }
-                    } else {
-                        if (DEBUG) {
-                            // In debug mode we also report on times
-                            $slackMsg = $routeMsg . ' ' . $timeMsg . ' on time';
-                        }
+                        $trainMessage->delayedMinutes = $delayMinutes;
                     }
-                }
-                if (!empty($slackMsg)) {
-                    if (!in_array($departure->name, $reportedTrains)) {
-                        $reportedTrains[] = $departure->name;
-                        $slack->postMessage($slackMsg);
-                    } else {
-                        if (DEBUG) {
-                            $slack->postMessage($slackMsg . ', already reported');
-                        }
-                    }
+
+                    $trainMessage->slackTS = $slack->reportTrainMessage($trainMessage);
+                    $cache->saveTrain($trainMessage);
                 }
             }
         }
     }
+
+    $cache->save();
 }
 
 

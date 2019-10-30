@@ -7,5 +7,5 @@ $ns = new NSApiHelper();
 
 $stations = $ns->getStations();
 foreach($stations as $station) {
-    echo $station->namen->lang.' '.$station->UICCode.'<br/>';
+    echo $station->namen->lang.' '.$station->UICCode."\n";
 }

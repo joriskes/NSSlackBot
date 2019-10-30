@@ -14,8 +14,9 @@ function run()
     }
 
     $ns = new NSApiHelper();
-    $slack = new SlackApiHelper();
     $cache = new TrainSlackTSCache();
+    $slack = new SlackApiHelper();
+    $slack->setChannelId(SLACK_CHANNEL_ID);
 
     $trajecten = [];
     $handled_trains = [];

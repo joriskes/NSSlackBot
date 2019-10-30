@@ -7,5 +7,5 @@ $slack = new SlackApiHelper();
 
 $channels = $slack->getChannelList();
 foreach($channels as $channel) {
-    echo $channel->id.' '.$channel->name_normalized."\n";
+    echo $channel->id.' '.$channel->name_normalized.PHP_EOL;
 }

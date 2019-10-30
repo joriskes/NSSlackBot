@@ -5,6 +5,10 @@ date_default_timezone_set('Europe/Amsterdam');
 // Also, debug mode will report on time trains, non-debug mode only reports delays / cancellations
 define('DEBUG',true);
 
+// Enabled loop mode to enable the script to keep running.
+// Set this to true if you want to use docker
+define('LOOP_MODE', false);
+
 // Request a free api key here: https://apiportal.ns.nl/
 // After that, activiate the Public-Travel-Information product and fill in the api key here
 define('NS_API_KEY', '');

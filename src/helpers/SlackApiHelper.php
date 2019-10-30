@@ -97,14 +97,14 @@ class SlackApiHelper extends CacheHelper
         if(!empty($slackMsg)) {
             if(empty($trainMessage->slackTS)) {
                 if(DEBUG) {
-                    echo 'DEBUG, skip NEW Slack message: '.$slackMsg."\n";
+                    echo 'DEBUG, skip NEW Slack message: '.$slackMsg.PHP_EOL;
                 } else {
                     $postResult = $this->postMessage($slackMsg);
                 }
             } else {
                 $slackMsg = $slackMsg.' (update: '.date('H:i').')';
                 if(DEBUG) {
-                    echo 'DEBUG, skip UPDATE Slack message '.$trainMessage->slackTS.': '.$slackMsg."\n";
+                    echo 'DEBUG, skip UPDATE Slack message '.$trainMessage->slackTS.': '.$slackMsg.PHP_EOL;
                 } else {
                     $postResult = $this->updateMessage($trainMessage->slackTS, $slackMsg);
                 }

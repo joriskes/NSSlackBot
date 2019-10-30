@@ -10,7 +10,9 @@ class CacheHelper
 
     protected function setCachePath($directory = '')
     {
-        if(empty($directory)) throw new Error('Invalid cache path');
+        if (empty($directory)) {
+            throw new Error('Invalid cache path');
+        }
 
         if (!file_exists($directory)) {
             mkdir($directory);
@@ -41,7 +43,9 @@ class CacheHelper
         $filename = $this->endpointToCacheFile($endpoint);
         if (file_exists($filename)) {
             $resJson = file_get_contents($filename);
-            if (!empty($resJson)) return @json_decode($resJson);
+            if (!empty($resJson)) {
+                return @json_decode($resJson);
+            }
         }
         return null;
     }

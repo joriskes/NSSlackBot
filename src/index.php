@@ -9,7 +9,9 @@ function run()
 {
     // No reporting for weekends
     $day = date('N');
-    if ($day > 5) exit();
+    if ($day > 5) {
+        exit();
+    }
 
     $ns = new NSApiHelper();
     $slack = new SlackApiHelper();
@@ -19,8 +21,12 @@ function run()
     $handled_trains = [];
     $time = date('G');
     // Select the right trajectories by time
-    if ($time > 5 && $time < 13) $trajecten = TRAJECTEN_OCHTEND;
-    if ($time > 12 && $time < 22) $trajecten = TRAJECTEN_MIDDAG;
+    if ($time > 5 && $time < 13) {
+        $trajecten = TRAJECTEN_OCHTEND;
+    }
+    if ($time > 12 && $time < 22) {
+        $trajecten = TRAJECTEN_MIDDAG;
+    }
 
     if (count($trajecten)) {
         foreach ($trajecten as $traject) {
@@ -35,7 +41,9 @@ function run()
                     function ($dep) use ($destUIC, $ns) {
                         // The route stations do have a UICCode in the resultset but the destination, oddly, has not
                         $trajectDestUIC = $ns->stationNameToUICCode($dep->direction);
-                        if ($destUIC == $trajectDestUIC) return true;
+                        if ($destUIC == $trajectDestUIC) {
+                            return true;
+                        }
 
                         // Check if the destination is in the route stations
                         if ($dep->routeStations && count($dep->routeStations) > 0) {
@@ -85,7 +93,11 @@ function run()
 
 // In LOOP_MODE keep running with delay
 do {
-    if(LOOP_MODE) echo 'Running'.PHP_EOL;
+    if (LOOP_MODE) {
+        echo 'Running' . PHP_EOL;
+    }
     run();
-    if(LOOP_MODE) sleep(300);
+    if (LOOP_MODE) {
+        sleep(300);
+    }
 } while (LOOP_MODE);

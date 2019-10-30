@@ -39,6 +39,3 @@ define('TRAJECTEN_MIDDAG', [
     [UIC_TILBURG, UIC_BOXTEL],
     [UIC_BREDA, UIC_TILBURG],
 ]);
-
-// Slack webhook where to post your notifications
-define('SLACK_WEBHOOK','https://hooks.slack.com/services/111111/222222222/3333333333');

@@ -1,4 +1,4 @@
-/config.php
-/cache/*.json
+/src/config.php
+/src/cache/*.json
 /.idea/
-/images/
+/src/images/

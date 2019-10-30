@@ -5,81 +5,85 @@ require('helpers/NSApiHelper.php');
 require('helpers/SlackApiHelper.php');
 require('helpers/TrainSlackTSCache.php');
 
-// No reporting for weekends
-$day = date('N');
-if($day > 5) exit();
+function run() {
+  // No reporting for weekends
+  $day = date('N');
+  if($day > 5) exit();
 
-$ns = new NSApiHelper();
-$slack = new SlackApiHelper();
-$cache = new TrainSlackTSCache();
+  $ns = new NSApiHelper();
+  $slack = new SlackApiHelper();
+  $cache = new TrainSlackTSCache();
 
-$trajecten = [];
-$handled_trains = [];
-$time = date('G');
-// Select the right trajectories by time
-if($time > 5 && $time < 13) $trajecten = TRAJECTEN_OCHTEND;
-if($time > 12 && $time < 22) $trajecten = TRAJECTEN_MIDDAG;
+  $trajecten = [];
+  $handled_trains = [];
+  $time = date('G');
+  // Select the right trajectories by time
+  if($time > 5 && $time < 13) $trajecten = TRAJECTEN_OCHTEND;
+  if($time > 12 && $time < 22) $trajecten = TRAJECTEN_MIDDAG;
 
-if(count($trajecten)) {
-    foreach($trajecten as $traject) {
-        $depUIC = $traject[0];
-        $destUIC = $traject[1];
+  if(count($trajecten)) {
+      foreach($trajecten as $traject) {
+          $depUIC = $traject[0];
+          $destUIC = $traject[1];
 
-        $departures = $ns->getDepartures($depUIC);
+          $departures = $ns->getDepartures($depUIC);
 
-        if(count($departures)) {
-            // Filter out all departures that do not stop at the wanted destination
-            $departures = array_filter($departures,
-                function($dep) use ($destUIC, $ns)
-                {
-                    // The route stations do have a UICCode in the resultset but the destination, oddly, has not
-                    $trajectDestUIC = $ns->stationNameToUICCode($dep->direction);
-                    if($destUIC == $trajectDestUIC) return true;
+          if(count($departures)) {
+              // Filter out all departures that do not stop at the wanted destination
+              $departures = array_filter($departures,
+                  function($dep) use ($destUIC, $ns)
+                  {
+                      // The route stations do have a UICCode in the resultset but the destination, oddly, has not
+                      $trajectDestUIC = $ns->stationNameToUICCode($dep->direction);
+                      if($destUIC == $trajectDestUIC) return true;
 
-                    // Check if the destination is in the route stations
-                    if($dep->routeStations && count($dep->routeStations) > 0) {
-                        foreach($dep->routeStations as $routeStation) {
-                            if($routeStation->uicCode == $destUIC) {
-                                return true;
-                            }
-                        }
-                    }
+                      // Check if the destination is in the route stations
+                      if($dep->routeStations && count($dep->routeStations) > 0) {
+                          foreach($dep->routeStations as $routeStation) {
+                              if($routeStation->uicCode == $destUIC) {
+                                  return true;
+                              }
+                          }
+                      }
 
-                    // Destination not found, filter out
-                    return false;
-                });
-        }
+                      // Destination not found, filter out
+                      return false;
+                  });
+          }
 
-        if(count($departures)) {
-            foreach ($departures as $departure) {
-                $trainId = $departure->name;
-                // Don't double report about the same train twice (eg. Eindhoven - Breda is sometimes also Tilburg - Breda)
-                if(!in_array($trainId, $handled_trains)) {
-                    $handled_trains[] = $trainId;
-                    $trainMessage = $cache->findTrain($trainId);
+          if(count($departures)) {
+              foreach ($departures as $departure) {
+                  $trainId = $departure->name;
+                  // Don't double report about the same train twice (eg. Eindhoven - Breda is sometimes also Tilburg - Breda)
+                  if(!in_array($trainId, $handled_trains)) {
+                      $handled_trains[] = $trainId;
+                      $trainMessage = $cache->findTrain($trainId);
 
-                    // For each remaining departure: build up a slack message reporting about it (if delayed)
-                    $plannedTime = strtotime($departure->plannedDateTime);
-                    $actualTime = strtotime($departure->actualDateTime);
+                      // For each remaining departure: build up a slack message reporting about it (if delayed)
+                      $plannedTime = strtotime($departure->plannedDateTime);
+                      $actualTime = strtotime($departure->actualDateTime);
 
-                    $trainMessage->from = $ns->UICCodeToStationName($depUIC);
-                    $trainMessage->to = $ns->UICCodeToStationName($destUIC);
-                    $trainMessage->plannedTimestamp = $plannedTime;
-                    $trainMessage->cancelled = $departure->cancelled;
+                      $trainMessage->from = $ns->UICCodeToStationName($depUIC);
+                      $trainMessage->to = $ns->UICCodeToStationName($destUIC);
+                      $trainMessage->plannedTimestamp = $plannedTime;
+                      $trainMessage->cancelled = $departure->cancelled;
 
-                    if (!$trainMessage->cancelled) {
-                        $delayMinutes = round(($actualTime - $plannedTime) / 60);
-                        $trainMessage->delayedMinutes = $delayMinutes;
-                    }
+                      if (!$trainMessage->cancelled) {
+                          $delayMinutes = round(($actualTime - $plannedTime) / 60);
+                          $trainMessage->delayedMinutes = $delayMinutes;
+                      }
 
-                    $trainMessage->slackTS = $slack->reportTrainMessage($trainMessage);
-                    $cache->saveTrain($trainMessage);
-                }
-            }
-        }
-    }
-
+                      $trainMessage->slackTS = $slack->reportTrainMessage($trainMessage);
+                      $cache->saveTrain($trainMessage);
+                  }
+              }
+          }
+      }
     $cache->save();
 }
 
-
+while (true) {
+    print "running \r\n";
+    run();
+    sleep(300);
+}

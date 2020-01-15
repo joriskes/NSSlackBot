@@ -67,7 +67,7 @@ class SlackApiHelper extends CacheHelper
             $slackMsg = $routeMsg . ' ' . $timeMsg . ' *TREIN VERVALT*';
         } else {
             // Don't report trains with a delay smaller than 5 minutes, only when already reporting or in debug mode
-            if (($trainMessage->delayedMinutes > 4) || (!empty($trainMessage->slackTS)) || DEBUG) {
+            if (($trainMessage->delayedMinutes > 9) || (!empty($trainMessage->slackTS)) || DEBUG) {
                 if ($trainMessage->delayedMinutes > 15) {
                     $slackMsg = $routeMsg . ' ' . $timeMsg . ' *+' . $trainMessage->delayedMinutes . ' minuten*';
                 } else {

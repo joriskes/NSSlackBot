@@ -2,7 +2,7 @@
 
 class NSApiHelper extends CacheHelper
 {
-    private $api_url = 'https://gateway.apiportal.ns.nl/public-reisinformatie/api/v2/';
+    private $api_url = 'https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/';
     private $api_key = NS_API_KEY;
     private $stationList = [];
 

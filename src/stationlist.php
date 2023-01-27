@@ -1,6 +1,7 @@
 <?php
 
 require('config.php');
+require('helpers/CacheHelper.php');
 require('helpers/NSApiHelper.php');
 
 $ns = new NSApiHelper();
